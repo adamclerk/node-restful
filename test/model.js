@@ -2,7 +2,8 @@ var should = require('should'),
     request = require('supertest'),
     config = require('./fixtures/config'),
     sinon = require('sinon'),
-    checkForHexRegExp = new RegExp('^[0-9a-fA-F]{24}$');
+    checkForHexRegExp = new RegExp('^[0-9a-fA-F]{24}$'),
+    md5 = require('MD5');
 
 var oldA = should.Assertion.prototype.a;
 should.Assertion.prototype.a = function (type, desc) {
@@ -60,7 +61,26 @@ describe('Model', function () {
       request(app)
         .get('/api/movies')
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200, done)
+        .end(function (err, res) {
+          var etag = md5(JSON.stringify(res.body));
+          res.header.etag.should.equal(etag);
+          done();
+        });
+    });
+    it('should include an etag with a GET for single id', function (done) {
+      request(app)
+        .get('/api/movies')
+        .end(function (err, res) {
+          var movie = res.body[0];
+          request(app)
+            .get('/api/movies/' + movie._id)
+            .end(function (err, res) {
+              var etag = md5(JSON.stringify(res.body));
+              res.header.etag.should.equal(etag);
+              done();
+            });
+        });
     });
     it('should fail POST with no data', function (done) {
       request(app)
@@ -78,8 +98,10 @@ describe('Model', function () {
         .expect('Content-Type', /json/)
         .expect(201)
         .end(function (err, res) {
+          var etag = md5(JSON.stringify(res.body));
           res.body.title.should.equal('A very stupid movie');
           res.body._id.should.a('_id');
+          res.header.etag.should.equal(etag);
           done(err);
         });
     });

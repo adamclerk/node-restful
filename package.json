@@ -29,6 +29,7 @@
   "repository": "git://github.com/baugarten/node-restful",
   "main": "index.js",
   "dependencies": {
+    "MD5": "^1.2.1",
     "underscore": "1.6.0"
   }
 }
