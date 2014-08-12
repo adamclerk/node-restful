@@ -4,12 +4,12 @@ var should = require('should'),
     mongoose = require('mongoose'),
     sinon = require('sinon');
 
-describe('Model', function() {
- 
-  before(function() {
+describe('Model', function () {
+
+  before(function () {
     restful.model('posts', mongoose.Schema({ title: 'string' }));
   });
-  it('should return a mongoose model', function() {
+  it('should return a mongoose model', function () {
     var posts = restful.model('posts');
 
     posts.should.have.property('methods');
@@ -18,7 +18,7 @@ describe('Model', function() {
     posts.should.have.property('updateOptions');
     posts.should.have.property('removeOptions');
   });
-  it('should add methods in a chainable way', function() {
+  it('should add methods in a chainable way', function () {
     var posts = restful.model('posts');
     posts.allowed_methods.should.have.property('get');
     posts.methods(['get', 'post', 'put'])
@@ -31,18 +31,18 @@ describe('Model', function() {
     posts.update_options.should.be.a('object');
     posts.remove_options.should.be.a('object');
     posts.templateRoot.should.eql('/idk/where/this/goes');
-    
+
   });
-  it('should be updateable', function(done) {
+  it('should be updateable', function (done) {
     var Posts = restful.model('posts');
     Posts.create({
-      title: "First post"
-    }, function(err, post) {
+      title: 'First post'
+    }, function (err, post) {
       post.title.should.equal('First post');
-      Posts.update({_id: post._id}, { title: "Second post"}, function(err, count, resp) {
-        count.should.equal(1)
-        done()
+      Posts.update({_id: post._id}, { title: 'Second post'}, function (err, count, resp) {
+        count.should.equal(1);
+        done();
       });
-    })
+    });
   });
 });

@@ -2,7 +2,7 @@ var should = require('should'),
     request = require('supertest'),
     sinon = require('sinon');
 
-describe('Model', function() {
+describe('Model', function () {
   var config,
       movies,
       users,
@@ -12,9 +12,9 @@ describe('Model', function() {
       movie3,
       user1,
       user2;
-  before(function(done) {
+  before(function (done) {
     config = require('./fixtures/config');
-    config.ready(function() {
+    config.ready(function () {
       app = config.app;
       movies = config.movie;
       users = config.user;
@@ -26,151 +26,151 @@ describe('Model', function() {
       done();
     });
   });
-  describe('filters', function() {
-    it('should limit GET to 10', function(done) {
+  describe('filters', function () {
+    it('should limit GET to 10', function (done) {
       request(app)
         .get('/api/movies?limit=10')
-        .end(function(err, res) {
+        .end(function (err, res) {
           res.body.length.should.equal(10);
           done();
         });
     });
-    it('should limit GET to 1', function(done) {
+    it('should limit GET to 1', function (done) {
       request(app)
         .get('/api/movies?limit=1')
-        .end(function(err, res) {
+        .end(function (err, res) {
           res.body.length.should.equal(1);
           done();
         });
     });
-    it('should skip by 5', function(done) {
+    it('should skip by 5', function (done) {
       request(app)
         .get('/api/movies?limit=1&skip=5')
-        .end(function(err, res) {
+        .end(function (err, res) {
           request(app)
             .get('/api/movies?limit=6')
-            .end(function(err2, res2) {
-              res.body[0].should.eql(res2.body[res2.body.length-1]);
+            .end(function (err2, res2) {
+              res.body[0].should.eql(res2.body[res2.body.length - 1]);
               done();
             });
         });
     });
-    it('should select fields', function(done) {
+    it('should select fields', function (done) {
       request(app)
         .get('/api/movies?select=year')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.should.not.have.property('title');
             movie.should.have.property('year');
           });
           done();
         });
     });
-    it('should sort documents', function(done) {
+    it('should sort documents', function (done) {
       request(app)
         .get('/api/movies?sort=year')
-        .end(function(err, res) {
-          for(var i = 1; i < res.body.length; i++) {
-            (res.body[i].year >= res.body[i-1].year).should.be.true;
+        .end(function (err, res) {
+          for (var i = 1; i < res.body.length; i++) {
+            (res.body[i].year >= res.body[i - 1].year).should.be.true;
           }
           done();
         });
     });
-    it('should filter fields using equal', function(done) {
+    it('should filter fields using equal', function (done) {
       request(app)
         .get('/api/movies?year=2011')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.year.should.equal(2011);
           });
           done();
         });
     });
-    it('should filter fields using gte', function(done) {
+    it('should filter fields using gte', function (done) {
       request(app)
         .get('/api/movies?year__gte=2012')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.year.should.be.above(2011);
           });
           done();
         });
     });
-    it('should filter fields using gt', function(done) {
+    it('should filter fields using gt', function (done) {
       request(app)
         .get('/api/movies?year__gt=2011')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.year.should.be.above(2011);
           });
           done();
         });
     });
-    it('should filter fields using lt', function(done) {
+    it('should filter fields using lt', function (done) {
       request(app)
         .get('/api/movies?year__lt=2013')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.year.should.be.below(2013);
           });
           done();
         });
     });
-    it('should filter fields using lte', function(done) {
+    it('should filter fields using lte', function (done) {
       request(app)
         .get('/api/movies?year__lte=2012')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.year.should.be.below(2013);
           });
           done();
         });
     });
-    it('should filter fields using ne', function(done) {
+    it('should filter fields using ne', function (done) {
       request(app)
         .get('/api/movies?year__ne=2013')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.year.should.not.equal(2013);
           });
           done();
         });
     });
-    it('should filter fields using regex', function(done) {
+    it('should filter fields using regex', function (done) {
       request(app)
         .get('/api/movies?title__regex=2')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.title.should.include('2');
           });
           done();
         });
     });
-    it('should filter fields using nocase', function(done) {
+    it('should filter fields using nocase', function (done) {
       request(app)
         .get('/api/movies?title__nocase=godzilla')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
             movie.title.should.include('Godzilla');
           });
           done();
         });
     });
-    it('should populate an objectId', function(done) {
+    it('should populate an objectId', function (done) {
       request(app)
         .get('/api/movies/' + movie1._id + '?populate=creator')
-        .end(function(err, res) {
+        .end(function (err, res) {
           res.body.creator.username.should.equal(user1.username);
           res.body.creator.pass_hash.should.equal(user1.pass_hash);
           done();
         });
     });
-    it('should filter using in', function(done) {
+    it('should filter using in', function (done) {
       request(app)
         .get('/api/movies?year__in=2010,2011')
-        .end(function(err, res) {
-          res.body.forEach(function(movie) {
-            [2010,2011].indexOf(movie.year).should.be.above(-1);
+        .end(function (err, res) {
+          res.body.forEach(function (movie) {
+            [2010, 2011].indexOf(movie.year).should.be.above(-1);
           });
           done();
         });
