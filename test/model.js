@@ -61,7 +61,7 @@ describe('Model', function () {
       request(app)
         .get('/api/movies')
         .expect('Content-Type', /json/)
-        .expect(200, done)
+        .expect(200)
         .end(function (err, res) {
           var etag = md5(JSON.stringify(res.body));
           res.header.etag.should.equal(etag);
