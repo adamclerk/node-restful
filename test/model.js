@@ -68,6 +68,34 @@ describe('Model', function () {
           done();
         });
     });
+
+    it('should dispatch to single GET', function (done) {
+      request(app)
+        .get('/api/movies/' + movie1._id)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .end(function (err, res) {
+          var etag = md5(JSON.stringify(res.body));
+          res.header.etag.should.equal(etag);
+          done();
+        });
+    });
+
+    it('should return 304 on matching if-none-match', function (done) {
+      request(app)
+        .get('/api/movies/' + movie2._id)
+        .end(function (err, res) {
+          var etag = md5(JSON.stringify(res.body));
+          request(app)
+            .get('/api/movies/' + movie2._id)
+            .set('if-none-match', etag)
+            .end(function (err, res) {
+              res.status.should.equal(304);
+              done();
+            });
+        });
+    });
+
     it('should include an etag with a GET for single id', function (done) {
       request(app)
         .get('/api/movies')
@@ -119,6 +147,23 @@ describe('Model', function () {
             movie.title.should.equal('I changed the movie title');
             done();
           });
+        });
+    });
+    it('should not PUT data with bad if-match', function (done) {
+      request(app)
+        .get('/api/movies/' + movie2._id)
+        .end(function (err, res){
+          var etag = res.headers.etag;
+          request(app)
+            .put('/api/movies/' + movie2._id)
+            .set('if-match', 'badtag')
+            .send({
+              title: 'I changed the movie title'
+            }).end(function (err, res) {
+              res.status.should.equal(412);
+              res.body.should.equal('Precondition Failed');
+              done();
+            });
         });
     });
     it('should fail on PUT without filter on unsortable model', function (done) {
